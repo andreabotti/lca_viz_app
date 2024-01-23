@@ -1,0 +1,110 @@
+﻿OP_level,OP_cat_name
+1,Struttura portante
+1.1,Strutture di fondazione e contenimento
+1.1.1,Strutture di fondazione dirette
+1.1.11,Strutture di contenimento verticali
+1.1.12,Strutture di contenimento orizzontali
+1.1.2,Strutture di fondazione indirette
+,
+1.2,Strutture di elevazlone
+1.2.1,Strutture di elevazione verticali
+1.2.2,Strutture di elevazione orizzontali
+1.2.3,Strutture di elevazione spaziali
+1.2.4,Strutture di elevazione inclinate
+1.2.5,"Trattamenti  (galvanizzazione, ecc...)"
+,
+2,Involucro
+2.1,Chiusure verticali
+2.1.1,Involucro verticale opaco
+2.1.2,Involucro verticale trasparente / infissi
+2.1.3,Rivestimenti esterni
+2.1.4,Schermature esterne
+,
+2.2,Chiusure orizzontali inferiori
+2.2.1,Solai contro-terra
+,
+2.3,Chiusure orizzontali su spazi esterni
+2.3.1,Finiture
+2.3.2,Massetti e strati intermedi
+,
+2.4,Chiusure superiori
+2.4.1,Coperture
+2.4.2,Infissi esterni orizzontali
+,
+3,Partizioni interne
+3.1,Partizioni interne verticali
+3.1.1,Pareti interne verticali
+3.1.2,Finiture pareti interne verticali
+3.1.3,Infissi interni verticali - vetrati
+3.1.4,Infissi interni verticali - porte
+3.1.5,Elementi di protezione
+,
+3.2,Partizioni interne orizzontali - solai
+3.2.1,Massetti e strati intermedi
+3.2.2,Pavimenti
+3.2.3,Pavimenti Industriali
+,
+3.3,Partizioni interne orizzontali - controsoffitti
+3.3.1,Controsoffitti
+,
+3.4,Partizioni interne inclinate
+3.4.1,Scale interne
+3.4.2,Rampe interne
+,
+4,Partizioni esterne
+4.1,Partizioni esterne verticali
+4.1.1,Elementi di protezione
+4.1.2,Elementi di separazione
+,
+4.2,Partizioni esterne orizzontali
+4.2.1,Balconi e logge
+4.2.2,Passerelle
+4.2.3,Coperture esterne
+,
+4.3,Partizioni esterne inclinate
+4.3.1,Scale esterne
+4.3.2,Rampe esterne
+,
+5,Impianti
+5.1,Impianti
+5.1.1,Climatizzazione
+5.1.2,Idrosanitario 
+5.1.3,Smaltimento liquidi 
+5.1.4,Elettrico
+5.1.5,Sicurezza antincendio
+,
+5.2,Strutture accessorie impianti
+5.2.1,Strutture accessorie impianti
+,
+5.3,Impianti di produzione energetica
+5.3.1,Impianto Fotovoltaico
+5.3.2,Sottostruttura impianto fotovoltaico
+,
+6,Arredi interni
+6.1,Arredi generici
+6.1.1,Arredi generici
+,
+7,Opere esterne
+7.1,Arredi esterni
+7.1.1,Arredi esterni
+,
+7.2,Allestimenti esterni
+7.2.1,Recinzioni
+,
+7.3,Pavimentazioni esterne
+7.3.1,Massetti e strati intermedi
+7.3.2,Pavimenti
+,
+8,Opere speciali
+8.1.1,Opere speciali
+,
+9,Cantiere
+9.1,Demolizioni
+9.1.1,Demolizioni
+,
+9.2,Costruzioni
+9.2.1,Costruzioni
+,
+9.3,Operazioni di cantiere
+9.3.1,Operazioni di cantiere
+9.3.2,Gestione rifiuti
