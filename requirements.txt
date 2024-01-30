@@ -13,10 +13,9 @@ openpyxl
 pandas
 plotly>=5.18.0
 seaborn
-st_aggrid
 streamlit>=1.30.0
 streamlit_super_slider
-streamlit-aggrid==0.3.4.post3
+streamlit-aggrid>=0.3.4.post3
 streamlit-camera-input-live==0.2.0
 streamlit-card==0.0.4
 streamlit-embedcode==0.1.2

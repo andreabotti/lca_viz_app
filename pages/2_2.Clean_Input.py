@@ -174,11 +174,8 @@ col2.markdown('###### Total Quantities - by material and OP Category')
 col1.write(grouped_df)
 col2.write(grouped_df__cat)
 
-
 with st.expander('All Material Quantities'):
     st.write(df_qty)
-
-
 
 
 
