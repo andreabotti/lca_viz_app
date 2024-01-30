@@ -22,42 +22,6 @@ from st_aggrid import AgGrid, GridOptionsBuilder, GridUpdateMode
 
 
 
-
-
-# Step 1: Register your app to get client_id and client_secret
-
-# Step 2: Implement OAuth2
-client_id = 'c0e0e22b-461a-40ad-ac46-c25791227ca6'
-client_secret = 'your_client_secret'
-redirect_uri = 'http://localhost:8000/'  # As set in Azure
-
-# Define scope and OAuth endpoints
-scope = ['https://graph.microsoft.com/.default']
-token_url = 'https://login.microsoftonline.com/common/oauth2/v2.0/token'
-
-# Create OAuth session
-oauth = OAuth2Session(client_id, redirect_uri=redirect_uri, scope=scope)
-
-# Get authorization URL
-authorization_url, state = oauth.authorization_url(token_url)
-print('Please go to %s and authorize access.' % authorization_url)
-authorization_response = input('Enter the full callback URL: ')
-
-# Fetch the access token
-token = oauth.fetch_token(token_url, authorization_response=authorization_response, 
-                          client_secret=client_secret)
-
-# Step 3: Access OneDrive/SharePoint
-onedrive_api_url = 'https://graph.microsoft.com/v1.0/me/drive/root/children'
-response = requests.get(onedrive_api_url, headers={'Authorization': f'Bearer {token["access_token"]}'})
-
-# Handle the response
-# ...
-
-
-
-
-
 def parse_levels(s):
     # Check if 's' is a string
     if isinstance(s, str):
