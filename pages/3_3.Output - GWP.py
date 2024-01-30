@@ -27,7 +27,15 @@ st.divider()
 
 
 ##### ##### LOAD CACHED DATA
+# Initialize df_raw in session state if it doesn't exist
+if 'df1' not in st.session_state:
+    st.session_state['df1'] = pd.DataFrame()  # Or your default DataFrame
+    st.warning('Please upload data to proceed')
+
+
+# Now you can safely access st.session_state['df_raw']
 df1 = st.session_state['df1']
+
 op_cat__col_name = st.session_state['op_cat__col_name']
 op_cat__list = st.session_state['op_cat__list']
 col_L1, col_L2, col_L3 = st.session_state['col_L1, col_L2, col_L3']
@@ -115,13 +123,13 @@ with TopColB:
 
 l1_colors = {cat: p_col for cat, p_col in zip(l1_categories, l1_colors)}
 l2_colors = {cat: adjust_hsl(l1_colors[cat.split('.')[0]], lightness_change=0.05, hue_change=0) for cat in df_l2['OP_cat_level']}
-l3_colors = {cat: adjust_hsl(l1_colors[cat.split('.')[1]], lightness_change=0.05, hue_change=0) for cat in df_l3['OP_cat_level']}
+l3_colors = {cat: adjust_hsl(l1_colors[cat.split('.')[0]], lightness_change=0.05, hue_change=0) for cat in df_l3['OP_cat_level']}
 
 
 
 
-chart_width = 300
-chart_height = 450
+pie_chart_width = 300
+pie_chart_height = 450
 
 
 # Create two sets of labels
@@ -131,7 +139,7 @@ hover_text = l3_full_labels
 
 
 # Add donut traces for each level
-fig_l1 = go.Figure(data=[go.Pie(
+fig_pie_l1 = go.Figure(data=[go.Pie(
     labels=df_l1['OP_cat_level']+ ' ' + df_l1['OP_cat_name'],
     values=df_l1['10__GWP'],
     marker=dict(
@@ -141,7 +149,7 @@ fig_l1 = go.Figure(data=[go.Pie(
     )]
 )
 
-fig_l2 = go.Figure(data=[go.Pie(
+fig_pie_l2 = go.Figure(data=[go.Pie(
     labels=df_l2['OP_cat_level'] + ' ' + df_l2['OP_cat_name'],
     values=df_l2['10__GWP'],
     marker=dict(
@@ -151,7 +159,7 @@ fig_l2 = go.Figure(data=[go.Pie(
     )]
 )
 
-fig_l3 = go.Figure(data=[go.Pie(
+fig_pie_l3 = go.Figure(data=[go.Pie(
     labels=df_l3['OP_cat_level'],
     values=df_l3['10__GWP'],
     marker=dict(
@@ -163,15 +171,15 @@ fig_l3 = go.Figure(data=[go.Pie(
 )
 
 # Update layout for consistent legend position
-# fig_l2.update_traces(textinfo='percent+label')
-fig_l1.update_layout(
+# fig_pie_l2.update_traces(textinfo='percent+label')
+fig_pie_l1.update_layout(
     legend=dict(
         orientation="h",
         yanchor="bottom", y=-0.5,
         xanchor="center", x=0.5,
         ),
 )
-fig_l2.update_layout(
+fig_pie_l2.update_layout(
     legend=dict(
         orientation="h",
         yanchor="bottom", y=-1,
@@ -181,11 +189,71 @@ fig_l2.update_layout(
 
 
 # Add buttons for control
-for fig in [fig_l1, fig_l2, fig_l3]:
+for fig in [fig_pie_l1, fig_pie_l2, fig_pie_l3]:
     fig.update_layout(
-        width=chart_width, height=chart_height,
+        width=pie_chart_width, height=pie_chart_height,
         margin=dict(l=10, r=10, t=0, b=100),
     )
+
+
+
+# Group by 'L1' and calculate cumulative '10__GWP'
+df_l1_cum = df_l1.groupby(col_L1)['10__GWP'].cumsum().reset_index()
+
+# Create a cumulative bar chart for df_l1
+fig_bar_l1 = go.Figure(
+    data=[go.Bar(
+        y=df_l1[col_L1],
+        x=df_l1['10__GWP'],
+        orientation='h',
+        marker=dict(
+            line=dict(color='#ffffff', width=1),
+            color=[l1_colors[cat] for cat in df_l1['OP_cat_level']]),
+        )
+    ]
+)
+fig_bar_l2 = go.Figure(
+    data=[go.Bar(
+        y=df_l2[col_L1],
+        x=df_l2['10__GWP'],
+        orientation='h',
+        marker=dict(
+            line=dict(color='#ffffff', width=2),
+            color=[l2_colors[cat] for cat in df_l2['OP_cat_level']]),
+        name='L1',
+        text=df_l2['OP_cat_level'],
+        textposition='inside',
+    )]
+)
+fig_bar_l3 = go.Figure(
+    data=[go.Bar(
+        y=df_l3[col_L1],
+        x=df_l3['10__GWP'],
+        orientation='h',
+        marker=dict(
+            line=dict(color='#ffffff', width=2),
+            color=[l3_colors[cat] for cat in df_l3['OP_cat_level']]),
+        name='L1',
+        text=df_l3['OP_cat_level'],
+        textposition='inside',
+    )]
+)
+
+bar_pie_chart_height = 400
+# Update layout for stacked barmode
+fig_bar_l1.update_layout(
+    barmode='stack',
+    height=bar_pie_chart_height,
+    )
+fig_bar_l2.update_layout(
+    barmode='stack',
+    height=bar_pie_chart_height,
+    )
+fig_bar_l3.update_layout(
+    barmode='stack',
+    height=bar_pie_chart_height,
+    )
+
 
 
 col_output_1, space, col_output_2, space, col_output_3 = st.columns([8,1,12,1,12])
@@ -201,27 +269,43 @@ for table in [df_l1, df_l2, df_l3]:
             ''
     table.set_index(['OP_cat_level'], inplace=True)
     table = percent_format_table_viz(df=table, gwp_col='10__GWP')
-
-
     tables.append(table)
 
+total_gwp_1 = round(df_l1['10__GWP'].sum(),0)
+total_gwp_2 = round(df_l2['10__GWP'].sum(),0)
+total_gwp_3 = round(df_l3['10__GWP'].sum(),0)
 
-display_phases = ', '.join( sorted( [ph for ph in selected_phases] ) )
-markdown_title = "<h6 style='text-align: center;'>  GWP - Phases {} </h6>".format(display_phases)
+
+display_phases  = ', '.join( sorted( [ph for ph in selected_phases] ) )
+markdown_level  = "<h6 style='text-align: center;'>Phases {}</h6>".format(display_phases)
+markdown_gwp    = "<h5 style='text-align: center;'>GWP = {} kgCO2e</h5>".format("{:,.0f}".format(total_gwp_3))
+
 
 with col_output_1:
-    st.markdown( "<h5 style='text-align: center;'>Level 1</h5>", unsafe_allow_html=True )
-    st.markdown(markdown_title, unsafe_allow_html=True)
-    st.plotly_chart(fig_l1, use_container_width=True)
+    st.markdown( "<h6 style='text-align: center;'>Level 1</h6>", unsafe_allow_html=True )
+    st.markdown(markdown_level, unsafe_allow_html=True)
+    st.markdown(markdown_gwp, unsafe_allow_html=True)
+
+    st.plotly_chart(fig_pie_l1, use_container_width=True)
+    st.plotly_chart(fig_bar_l1, use_container_width=True)
     st.dataframe(tables[0], use_container_width=True)
 
+
 with col_output_2:
-    st.markdown( "<h5 style='text-align: center;'>Level 2</h5>", unsafe_allow_html=True )
-    st.markdown(markdown_title, unsafe_allow_html=True)
-    st.plotly_chart(fig_l2, use_container_width=True)
+    st.markdown( "<h6 style='text-align: center;'>Level 2</h6>", unsafe_allow_html=True )
+    st.markdown(markdown_level, unsafe_allow_html=True)
+    st.markdown(markdown_gwp, unsafe_allow_html=True)
+
+    st.plotly_chart(fig_pie_l2, use_container_width=True)
+    st.plotly_chart(fig_bar_l2, use_container_width=True)
     st.dataframe(tables[1], use_container_width=True)
 
+
 with col_output_3:
-    st.markdown( "<h5 style='text-align: center;'>Level 2</h5>", unsafe_allow_html=True )
-    st.markdown(markdown_title, unsafe_allow_html=True)
+    st.markdown( "<h6 style='text-align: center;'>Level 3</h6>", unsafe_allow_html=True )
+    st.markdown(markdown_level, unsafe_allow_html=True)
+    st.markdown(markdown_gwp, unsafe_allow_html=True)
+
+    st.plotly_chart(fig_pie_l3, use_container_width=True)
+    st.plotly_chart(fig_bar_l3, use_container_width=True)
     st.dataframe(tables[2], height=850, use_container_width=True)
