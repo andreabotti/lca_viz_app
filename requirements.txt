@@ -29,3 +29,4 @@ streamlit-pills==0.3.0
 streamlit-plotly-events==0.0.6
 streamlit-toggle-switch==1.0.2
 streamlit-vertical-slider>=1.0.2
+xlrd >= 2.0.1
