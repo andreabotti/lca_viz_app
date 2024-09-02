@@ -2,26 +2,13 @@
 from fn__libraries import *
 
 
+####################################################################################
+from fn__page_header import create_page_header
+create_page_header()
 
 
 
-
-
-##### ##### PAGE CONFIG
-st.set_page_config(page_title="LCA Viz App",   page_icon=':mostly_sunny:', layout="wide")
-st.markdown(
-    """<style>.block-container {padding-top: 0rem; padding-bottom: 0rem; padding-left: 2.5rem; padding-right: 2.5rem;}</style>""",
-    unsafe_allow_html=True)
-
-
-##### ##### TOP CONTAINER
-top_col1, top_col2 = st.columns([6,1])
-with top_col1:
-    st.markdown("# LCA Viz App")
-    # st.markdown("#### Analisi di dati meteorologici ITAliani per facilitare l'Adattamento ai Cambiamenti Climatici")
-    st.caption('Developed by AB.S.RD - https://absrd.xyz/')
-
-st.divider()
+####################################################################################
 
 
 
@@ -58,23 +45,13 @@ with col_single:
                 <br> - upload a **csv** file \
                 <br> - provide a URL for a csv file hosted on the cloud (.e.g OneDrive or Dropbox)', unsafe_allow_html=True)
 
-
-    # Initialize the current page in session state
-    # if st.button('Go to page Load Data'):
-    #     navigate_to_page('1_Load_Data')
-
     st.markdown('')
     st.markdown('##### Step 2')
     st.markdown('Visit "Clean Input" page and choose whether to filter the data by life cycle phases.', unsafe_allow_html=True)
 
-    # if st.button('Go to page Clean Input'):
-    #     navigate_to_page( AppPath + 'Clean_Input')
-
-
     st.markdown('')
     st.markdown('##### Step 3')
     st.markdown('Visit the "Output - GWP" page and visualise charts and table for the uploaded data.', unsafe_allow_html=True)
-
 
 
 

@@ -4,8 +4,12 @@ from datetime import datetime, timedelta
 
 import plotly.express as px
 import plotly.graph_objects as go
+import plotly.io as pio
 import altair as alt
 import colorsys
+import matplotlib.pyplot as plt
+import matplotlib as mpl
+from matplotlib import rc
 
 import streamlit as st
 from streamlit_super_slider import st_slider
@@ -17,8 +21,46 @@ from st_aggrid import AgGrid, GridOptionsBuilder, GridUpdateMode
 
 
 
+# Set various display options for pandas DataFrames
+pd.options.display.max_colwidth = 400  # Adjust this value for maximum column width
+pd.options.display.max_rows = 40       # Maximum number of rows to display
+pd.options.display.max_columns = None  # Display all columns
+pd.options.display.precision = 2       # Set precision for decimal numbers
+pd.options.display.float_format = '{:.2f}'.format  # Format for floating point numbers
+pd.options.display.expand_frame_repr = True  # Do not allow DataFrames to be printed over multiple lines
+pd.options.display.colheader_justify = 'center'  # Center-align column headers
 
 
+
+
+
+def custom_horiz_line():
+    # Inject custom CSS to reduce vertical spacing before and after the horizontal line
+    st.markdown("""
+        <style>
+            .hr-line {
+                margin-top: -5px;
+                margin-bottom: 0px;
+            }
+        </style>
+    """, unsafe_allow_html=True)
+    # Adding the horizontal line with reduced vertical spacing
+    st.markdown('<hr class="hr-line">', unsafe_allow_html=True)
+
+
+
+
+
+
+def apply_categorization(df, category_type, cat__col_name, col_L1, col_L2, col_L3):
+    """
+    Apply the selected categorization to the DataFrame.
+    """
+
+    # Apply categorization to the DataFrame
+    df[col_L1], df[col_L2], df[col_L3] = zip(*df[cat__col_name].apply(parse_levels))
+    
+    return df, {'col_L1': col_L1, 'col_L2': col_L2, 'col_L3': col_L3, 'cat_col_name': cat__col_name}
 
 
 
@@ -36,18 +78,18 @@ def parse_levels(s):
 
 
 
+
 # Helper function to format the DataFrame
-def percent_format_table_viz(df, gwp_col):
+def percent_format_table_viz(df, gwp_col, cat_col):
     
     df[gwp_col] = pd.to_numeric(df[gwp_col]).round(0)
     total_gwp = df[gwp_col].sum()
     df['% of total'] = (df[gwp_col] / total_gwp * 100).round(1)
     df['% of total'] = df['% of total'].astype(str) + '%'
     
-    df = df[['OP_cat_name', gwp_col, '% of total']]
+    df = df[[cat_col, gwp_col, '% of total']]
 
     return df
-
 
 
 
@@ -95,7 +137,26 @@ def adjust_hsl(color, lightness_change, hue_change):
 
 
 
-def rename_headers__oclca(df, op_cat__col_name):
+def rename_headers__oclca(df):
+    # df1 = df
+    df.rename(columns={
+    'Section'           :   '01__phase',   
+    'Resource'          :   '02__oclca_item',
+    'User input'        :   '03__quantity',   
+    'Unit'              :   '04__FU',
+    'RICS category'     :   '05__rics_cat',
+    'Resource type'     :   '06__mat_cat',
+    'Comment'           :   '07_comment',
+    'Global warming kg CO₂e'    :   '10__GWP',
+    'TOTAL kg CO2e kg CO₂e'     :   '10__GWP',
+    }, inplace=True)
+
+    return df
+
+
+
+
+def rename_headers__oclca__OpenProject(df, op_cat__col_name):
     # df1 = df
     df.rename(columns={
     'Section'           :   '01__phase',   
@@ -112,32 +173,151 @@ def rename_headers__oclca(df, op_cat__col_name):
 
     return df
 
-# 5:'Biogenic carbon storage kg CO₂e bio'
-# 7:'Acidification kg SO₂e'
-# 8:'Eutrophication kg PO₄e'
-# 9:'Formation of ozone of lower atmosphere kg Ethenee'
-# 10:'Abiotic depletion potential (ADP-elements) for non fossil resources kg Sbe'
-# 11:'Abiotic depletion potential (ADP-fossil fuels) for fossil resources MJ'
-# 12:'Use of renewable primary energy resources as raw materials MJ'
-# 13:'Total use of primary energy ex. raw materials MJ'
-# 14:'Total use of renewable primary energy MJ'
-# 15:'Total use of non renewable primary energy MJ'
-# 16:'Use of net fresh water m³'
-# 17:'Energy kWh'
-# 18:'Water consumption m³'
-# 19:'Distance traveled km'
-# 20:'Fuel consumption litres'
-# 21:'Mass of raw materials kg'
-# 22:'Question'
-# 23:'Thickness mm'
-# 24:'Comment'
-# 25:'Building Parts'
-# 28:'Construction'
-# 29:'Resource type'
-# 30:'Datasource'
-# 31:'Name'
-# 32:'Transformation process'
-# 33:'uniClass'
-# 34:'csiMasterformat'
-# 35:'class'
-# 36:'Imported label'
+
+
+
+def multilevel_donut_chart(df, col_L1, col_L2, col_L3, op_cat__col_name, gwp_col):
+
+    # Group the data by '.L1', '.L2', '.L3', and '.OP_cat', then sum the '10__GWP' values
+    grouped_gwp = df.groupby([col_L1, col_L2, col_L3,op_cat__col_name])[gwp_col].sum()
+
+    # Reset index to work with the grouped data more easily
+    grouped_gwp_reset = grouped_gwp.reset_index()
+
+    # Recalculate counts to reflect the new grouping
+    counts_gwp = grouped_gwp_reset.groupby([col_L1, col_L2, col_L3,op_cat__col_name])[gwp_col].sum()
+
+
+    # Define primary colormaps (cycle if levels > 6)
+    cmaps = np.resize(['Blues_r', 'Greens_r', 'Oranges_r', 'Purples_r', 'Reds_r', 'Greys_r'],
+                    counts_gwp.index.get_level_values(0).size)
+
+
+    # Define missing constants
+    WEDGE_SIZE = 0.45
+    LABEL_THRESHOLD = 50000
+
+
+
+    fig, ax = plt.subplots(figsize=(12, 8))
+
+    for level in range(3):  # We have three levels: .L1, .L2, .L3
+        # Compute grouped sums up to current level, including .OP_cat for labeling purposes
+        if level == 2:  # At the last level, include .OP_cat in the grouping
+            wedges = counts_gwp.groupby(level=list(range(level + 2))).sum()
+        else:
+            wedges = counts_gwp.groupby(level=list(range(level + 1))).sum()
+
+        # print(wedges)
+        # Extract annotation labels
+        if level == 2:  # Use .OP_cat as labels for the outermost layer
+            labels = wedges.index.get_level_values(level + 1)
+        else:
+            labels = wedges.index.get_level_values(level)
+
+        # Generate color shades per group
+        index = [i for i in wedges.index.tolist()]  # Index is already standardized due to reset_index above
+        g0 = pd.DataFrame(index).groupby(0)
+        maps = g0.ngroup()
+        shades = g0.cumcount() / g0.size().max()
+        colors = [plt.get_cmap(cmaps[m])(s) for m, s in zip(maps, shades)]
+        
+        # Plot colorized/labeled donut layer
+        ax.pie(x=wedges,
+            radius=1 + (level * WEDGE_SIZE),
+            colors=colors,
+            labels=np.where(wedges >= LABEL_THRESHOLD, labels, ''),  # unlabel if under threshold
+            rotatelabels=True,
+            labeldistance=1.02 - 1.4 / (level + 3.5),  # put labels inside wedge instead of outside
+            wedgeprops=dict(width=WEDGE_SIZE, linewidth=0, alpha=0.6),
+            )
+
+        # # Example: Setting font properties for labels
+        # for label in labels:
+        #     label.set_fontsize(12)
+        #     label.set_fontname('Roboto')
+
+        # # Plot colorized donut layer with adjusted labeling for small slices
+        # wedges, texts = ax.pie(x=wedges,
+        #                     radius=1 + (level * WEDGE_SIZE),
+        #                     colors=colors,
+        #                     labels=None,  # Handle labels separately to use callouts
+        #                     startangle=90,
+        #                     counterclock=False,
+        #                     wedgeprops=dict(width=WEDGE_SIZE, linewidth=0, alpha=0.7))
+
+        # # Add labels with callouts for small slices
+        # for i, (wedge, label) in enumerate(zip(wedges, labels)):
+        #     if small_wedges.iloc[i]:
+        #         x, y = wedge.theta1, wedge.r
+        #         ax.annotate(label, xy=(x, y), xytext=(1.5*np.sign(x), 1.2*y),
+        #                     textcoords='polar', horizontalalignment='center',
+        #                     arrowprops=dict(arrowstyle="->", color='black'))
+
+
+    # ax.set_title('Hierarchical Donut Chart Grouped by .L1, .L2, .L3 and .OP_cat, Summed by 10__GWP')
+
+    # plt.rcParams['font.size'] = 12
+    # plt.rcParams['font.family'] = 'Roboto'
+    # rc('text', usetex=True)
+
+    return plt
+
+
+
+
+
+
+
+
+
+# def multilevel_donut_chart(mapping_df)
+
+
+# # Prepare a mapping dictionary from the mapping dataframe
+# mapping_dict = pd.Series(mapping_df.OP_cat_name.values, index=mapping_df.OP_level).to_dict()
+
+# # Function to apply mapping to labels
+# def apply_mapping(label):
+#     return mapping_dict.get(str(label), label)
+
+# # Adjusting the plotting code with the specified enhancements
+# fig, ax = plt.subplots(figsize=(12, 10))
+# total_gwp = counts_gwp.sum()
+
+# for level in range(3):  # We have three levels: .L1, .L2, .L3
+#     if level == 2:  # At the last level, include .OP_cat in the grouping
+#         wedges = counts_gwp.groupby(level=list(range(level + 2))).sum()
+#     else:
+#         wedges = counts_gwp.groupby(level=list(range(level + 1))).sum()
+
+#     labels = [apply_mapping(label) if level < 2 else label for label in wedges.index.get_level_values(level)]
+#     small_wedges = wedges < (total_gwp * 0.02)  # Identify small wedges
+#     autopct = lambda pct: "{:.1f}%".format(pct) if pct >= 2 else ''
+
+#     # Generate color shades per group
+#     index = [i for i in wedges.index.tolist()]
+#     g0 = pd.DataFrame(index).groupby(0)
+#     maps = g0.ngroup()
+#     shades = g0.cumcount() / g0.size().max()
+#     colors = [plt.get_cmap(cmaps[m])(s) for m, s in zip(maps, shades)]
+    
+#     # Plot colorized donut layer with adjusted labeling for small slices
+#     wedges, texts = ax.pie(x=wedges,
+#                            radius=1 + (level * WEDGE_SIZE),
+#                            colors=colors,
+#                            labels=None,  # Handle labels separately to use callouts
+#                            startangle=90,
+#                            counterclock=False,
+#                            wedgeprops=dict(width=WEDGE_SIZE, linewidth=0, alpha=0.7))
+
+#     # Add labels with callouts for small slices
+#     for i, (wedge, label) in enumerate(zip(wedges, labels)):
+#         if small_wedges.iloc[i]:
+#             x, y = wedge.theta1, wedge.r
+#             ax.annotate(label, xy=(x, y), xytext=(1.5*np.sign(x), 1.2*y),
+#                         textcoords='polar', horizontalalignment='center',
+#                         arrowprops=dict(arrowstyle="->", color='black'))
+
+# ax.set_title('Hierarchical Donut Chart with Enhanced Labeling and Custom Fonts')
+# plt.show()
