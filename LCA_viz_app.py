@@ -30,24 +30,33 @@ AppPath = AppPath_Local
 
 
 ##### ##### SET NAMES
+st.markdown('---')
 st.markdown('### How to use the app:')
 
 
-col_single, col_comp, space = st.columns([4,4,3])
-
+col_single, space, col_comp = st.columns([3,2,1])
 
 with col_single:
-    st.markdown('---')
-    st.markdown('##### For explorations of a single LCA model')
-
+    
+    # st.markdown('##### For explorations of a single LCA model')
     st.markdown('##### Step 1')
-    st.markdown('Open the Load Data page, and choose to either: \
-                <br> - upload a **csv** file \
-                <br> - provide a URL for a csv file hosted on the cloud (.e.g OneDrive or Dropbox)', unsafe_allow_html=True)
+    st.markdown('Set the project data \
+                including total floor and facade areas \
+                ',
+                unsafe_allow_html=True,
+                )
+
 
     st.markdown('')
     st.markdown('##### Step 2')
-    st.markdown('Visit "Clean Input" page and choose whether to filter the data by life cycle phases.', unsafe_allow_html=True)
+    st.markdown('Open the Load Data page, and choose to either: \
+                <br> - upload a **csv** or **xlxs** file \
+                <br> - provide a URL for a csv file hosted on the cloud (.e.g OneDrive or Dropbox)',
+                unsafe_allow_html=True,
+                )
+    st.markdown('**For the current version of the app, the data should be a Detailed Report exported from OneClickLCA**')
+    st.image('./img/OneClickLCA__DetailedResults__screenshot.png')
+
 
     st.markdown('')
     st.markdown('##### Step 3')
@@ -55,28 +64,28 @@ with col_single:
 
 
 
-with col_comp:
-    st.markdown('---')
-    st.markdown('##### For comparative explorations of two LCA models')
+# with col_comp:
+#     st.markdown('---')
+#     st.markdown('##### For comparative explorations of two LCA models')
 
-    st.markdown('##### Step 11')
-    st.markdown('Open the Load Data page, and choose to either: \
-                <br> - upload a **csv** file \
-                <br> - provide a URL for a csv file hosted on the cloud (.e.g OneDrive or Dropbox)', unsafe_allow_html=True)
+#     st.markdown('##### Step 11')
+#     st.markdown('Open the Load Data page, and choose to either: \
+#                 <br> - upload a **csv** file \
+#                 <br> - provide a URL for a csv file hosted on the cloud (.e.g OneDrive or Dropbox)', unsafe_allow_html=True)
 
-    # Initialize the current page in session state
-    # if st.button('Go to page Load Data - Two Models'):
-    #     navigate_to_page('1_Load_Data')
+#     # Initialize the current page in session state
+#     # if st.button('Go to page Load Data - Two Models'):
+#     #     navigate_to_page('1_Load_Data')
 
-    st.markdown('')
-    st.markdown('##### Step 2')
-    st.markdown('Visit "Clean Input" page and choose whether to filter the data by life cycle phases.', unsafe_allow_html=True)
+#     st.markdown('')
+#     st.markdown('##### Step 2')
+#     st.markdown('Visit "Clean Input" page and choose whether to filter the data by life cycle phases.', unsafe_allow_html=True)
 
-    # if st.button('Go to page Clean Input - Two Models'):
-    #     navigate_to_page( AppPath + 'Clean_Input')
+#     # if st.button('Go to page Clean Input - Two Models'):
+#     #     navigate_to_page( AppPath + 'Clean_Input')
 
 
-    st.markdown('')
-    st.markdown('##### Step 3')
-    st.markdown('Visit the "Output - GWP" page and visualise charts and table for the uploaded data.', unsafe_allow_html=True)
+#     st.markdown('')
+#     st.markdown('##### Step 3')
+#     st.markdown('Visit the "Output - GWP" page and visualise charts and table for the uploaded data.', unsafe_allow_html=True)
 
