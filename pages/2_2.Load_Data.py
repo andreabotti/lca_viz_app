@@ -37,13 +37,77 @@ col_L1, col_L2, col_L3 = col_L1_rics, col_L2_rics, col_L3_rics
 
 
 
+####################################################################################
+raw_colname_phase   = 'Section'
+raw_colname_item    = 'Resource'
+raw_colname_qty     = 'User input'
+raw_colname_fu      = 'Unit'
+raw_colname_ricscat = 'RICS category'
+raw_colname_matcat  = 'Resource type'
+raw_colname_comment = 'Comment'
+raw_colname_gwp     = 'TOTAL kg CO2e kg CO₂e'
+
+
+new_colname_phase   = '01_Phase'
+new_colname_item    = '02_OC-LCA-Item'
+new_colname_qty     = '03_QUANTITY'
+new_colname_fu      = '04_FU'
+new_colname_ricscat = '05_RICSCat'
+new_colname_matcat  = '06_MatCat'
+new_colname_comment = '07_Comment'
+new_colname_gwp     = '10__GWP'
+
+
+
+
+
+####################################################################################
+# SET AREAS
+# Initialize session state variables if they don't already exist
+if 'GIA' not in st.session_state:
+    st.session_state['GIA'] = 1  # Default value
+if 'TFA' not in st.session_state:
+    st.session_state['TFA'] = 1  # Default value
+if 'FSA' not in st.session_state:
+    st.session_state['FSA'] = 1  # Default value
+if 'FFF' not in st.session_state:
+    st.session_state['FFF'] = 0.0  # Default value (float)
+
+# Update session state variables with current inputs
+with st.sidebar:
+    st.markdown('### Areas (m2)')
+    GIA = st.number_input('Gross Internal Area - GIA', min_value=0, step=1, value=st.session_state['GIA'], format="%d")
+    FSA = st.number_input('Facade Surface Area - FSA', min_value=1, step=1, value=st.session_state['FSA'], format="%d")
+    FFF = FSA / GIA
+    st.metric(label='Facade Form Factor - FFF', value=f"{FFF:.3f}")
+    custom_horiz_line()
+
+
+    # TFA = st.number_input('Treated Floor Area - TFA', min_value=0, step=1, value=st.session_state['TFA'], format="%d")
+    # st.metric(label='TFA', value=f"{TFA} m2")
+
+
+    # st.image('./img/CWCT__GIA_FSA_sketch.png')
+    # st.caption('Source: \"How to calculate the embodied carbon of facades: A methodology\"')
+    # col_image.caption('https://www.cwct.co.uk/pages/embodied-carbon-methodology-for-facades')
+
+
+GIA = st.session_state['GIA']
+TFA = st.session_state['TFA']
+FSA = st.session_state['FSA']
+FFF = st.session_state['GIA']
+
+
+
+
+
 
 ####################################################################################
 # Sidebar for file upload and format selection
 with st.sidebar:
     st.markdown('#### Upload data - Choose data format')
 
-    upload_data_format = st.radio('Choose input data format: _csv_ or _xlsx_:', options=['xlsx', 'csv'])
+    upload_data_format = st.radio('Choose input data format: _csv_ or _xlsx_:', options=['xlsx', 'csv'], horizontal=True)
 
     if upload_data_format == 'csv':
         uploaded_csv = st.file_uploader("Choose a file in **CSV** format", type='csv')
@@ -79,15 +143,14 @@ if df_raw is not None:
         columns=lambda x: x.strip(),  # Strip any leading/trailing whitespace from column names
     ).rename(
         columns={
-            'Section': '01__phase',
-            'Resource': '02__oclca_item',
-            'User input': '03__quantity',
-            'Unit': '04__FU',
-            'RICS category': '05__rics_cat',
-            'Resource type': '06__mat_cat',
-            'Comment': '07_comment',
-            'Global warming kg CO₂e': '10__GWP',
-            'TOTAL kg CO2e kg CO₂e': '10__GWP',
+            raw_colname_phase : new_colname_phase,
+            raw_colname_item : new_colname_item,
+            raw_colname_qty : new_colname_qty,
+            raw_colname_fu : new_colname_fu,
+            raw_colname_ricscat : new_colname_ricscat,
+            raw_colname_matcat : new_colname_matcat,
+            raw_colname_comment : new_colname_comment,
+            raw_colname_gwp : new_colname_gwp,
         },
     )
 
